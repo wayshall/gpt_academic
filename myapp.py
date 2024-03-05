@@ -20,7 +20,7 @@ def main():
     INIT_SYS_PROMPT = get_conf('INIT_SYS_PROMPT')
 
     # 是否显示所有功能界面
-    is_show_all_function = True
+    is_show_all_function = False
     title_desc = get_conf('TITLE_DESC')
     if not title_desc:
         title_desc = 'GPT 学术优化'
@@ -90,7 +90,7 @@ def main():
             with gr_L2(scale=1, elem_id="gpt-panel"):
                 with gr.Accordion("输入区", open=True, elem_id="input-panel") as area_input_primary:
                     with gr.Row():
-                        txt = gr.Textbox(show_label=False, placeholder="Input question here.", elem_id='user_input_main').style(container=False)
+                        txt = gr.Textbox(show_label=False, placeholder="请在这里输入你想问的问题...", elem_id='user_input_main').style(container=False)
                     with gr.Row():
                         submitBtn = gr.Button("提交", elem_id="elem_submit", variant="primary")
                     with gr.Row():
@@ -103,7 +103,7 @@ def main():
                     with gr.Row():
                         status = gr.Markdown(f"Tip: 按Enter提交, 按Shift+Enter换行。当前模型: {LLM_MODEL} \n {proxy_info}", elem_id="state-panel")
 
-                with gr.Accordion("基础功能区", open=True, elem_id="basic-panel") as area_basic_fn:
+                with gr.Accordion("基础功能区", open=True, elem_id="basic-panel", render=is_show_all_function) as area_basic_fn:
                     with gr.Row():
                         for k in range(NUM_CUSTOM_BASIC_BTN):
                             customize_btn = gr.Button("自定义按钮" + str(k+1), visible=False, variant="secondary", info_str=f'基础功能区: 自定义按钮')
@@ -115,7 +115,7 @@ def main():
                             functional[k]["Button"] = gr.Button(k, variant=variant, info_str=f'基础功能区: {k}')
                             functional[k]["Button"].style(size="sm")
                             predefined_btns.update({k: functional[k]["Button"]})
-                with gr.Accordion("函数插件区", open=True, elem_id="plugin-panel") as area_crazy_fn:
+                with gr.Accordion("函数插件区", open=True, elem_id="plugin-panel", render=is_show_all_function) as area_crazy_fn:
                     with gr.Row():
                         gr.Markdown("插件可读取“输入区”文本/路径作为参数（上传文件自动修正路径）")
                     with gr.Row(elem_id="input-plugin-group"):
@@ -149,20 +149,21 @@ def main():
 
         with gr.Floating(init_x="0%", init_y="0%", visible=True, width=None, drag="forbidden", elem_id="tooltip"):
             with gr.Row():
-                with gr.Tab("上传文件", elem_id="interact-panel", render=is_show_all_function):
+                with gr.Tab("上传文件", elem_id="interact-panel"):
                     gr.Markdown("请上传本地文件/压缩包供“函数插件区”功能调用。请注意: 上传文件后会自动把输入区修改为相应路径。")
                     file_upload_2 = gr.Files(label="任何文件, 推荐上传压缩文件(zip, tar)", file_count="multiple", elem_id="elem_upload_float")
 
-                with gr.Tab("更换模型", elem_id="interact-panel"):
+                with gr.Tab("更改模型和参数", elem_id="interact-panel"):
                     md_dropdown = gr.Dropdown(AVAIL_LLM_MODELS, value=LLM_MODEL, label="更换LLM模型/请求源").style(container=False)
                     _exist_model_config = cookies.value["llm_model_configs"][LLM_MODEL]
                     top_p = gr.Slider(minimum=-0, maximum=1.0, value=_exist_model_config["top_p"], step=0.01,interactive=True, label="Top-p (nucleus sampling)",)
                     temperature = gr.Slider(minimum=-0, maximum=2.0, value=_exist_model_config["temperature"], step=0.01, interactive=True, label="Temperature",)
                     max_length_sl = gr.Slider(minimum=256, maximum=1024*32, value=_exist_model_config["max_length_sl"], step=128, interactive=True, label="MaxLength",)
                     system_prompt = gr.Textbox(show_label=True, lines=2, placeholder=f"System Prompt", label="System prompt", value=_exist_model_config["system_prompt"])
-                    btn_llm_config = gr.Button("设置模型参数", elem_id="btn_llm_config", variant="primary")
+                    # llm_config_msg = gr.Text(show_label=False, interactive=False, value="模型参数已保存", visible=False)
+                    # btn_llm_config = gr.Button("设置模型参数", elem_id="btn_llm_config", variant="primary")
 
-                with gr.Tab("界面外观", elem_id="interact-panel"):
+                with gr.Tab("界面外观", elem_id="interact-panel", render=is_show_all_function):
                     theme_dropdown = gr.Dropdown(AVAIL_THEMES, value=THEME, label="更换UI主题").style(container=False)
                     checkboxes = gr.CheckboxGroup(["基础功能区", "函数插件区", "浮动输入区", "输入清除键", "插件参数区"], value=["基础功能区", "函数插件区"], label="显示/隐藏功能区", elem_id='cbs').style(container=False)
                     opt = ["自定义菜单"]
@@ -329,42 +330,26 @@ def main():
         dropdown.select(on_dropdown_changed, [dropdown], [switchy_bt, plugin_advanced_arg] )
 
         def on_md_dropdown_changed(cookies_, k):
-            print("当前模型：")
             model_config = cookies_["llm_model_configs"][k]
             # return _llm_model_configs_cookies, _top_p, _temperature, _max_tokens, _system_prompt
-            return cookies_, k, model_config["top_p"], model_config["temperature"], model_config["max_length_sl"], model_config["system_prompt"]
+            return cookies_, gr.update(label="当前模型："+k), model_config["top_p"], model_config["temperature"], model_config["max_length_sl"], model_config["system_prompt"], None, [], None
 
         md_dropdown.select(on_md_dropdown_changed,
                            [cookies, md_dropdown],
-                           [cookies, md_dropdown, top_p, temperature, max_length_sl, system_prompt])
+                           [cookies, chatbot, top_p, temperature, max_length_sl, system_prompt, chatbot, history, status])
 
-        def on_llm_config_submit(cookies_, k, _top_p, _temperature, _max_length_sl, _system_prompt):
-            model_config = cookies_["llm_model_configs"][k]
+        from functools import partial
+        def on_llm_config_change(keyname, cookies_, model_name_, val):
+            model_config = cookies_["llm_model_configs"][model_name_]
             model_config.update({
-                "top_p": _top_p,
-                "temperature": _temperature,
-                "max_length_sl": _max_length_sl,
-                "system_prompt": _system_prompt
+                keyname: val
             })
-            # 返回对应模型名称的配置
-            return cookies_, _top_p, _temperature, _max_length_sl, _system_prompt
-        btn_llm_config.click(fn=on_llm_config_submit,
-                             inputs=[
-                                 cookies,
-                                 md_dropdown,
-                                 top_p,
-                                 temperature,
-                                 max_length_sl,
-                                 system_prompt
-                             ],
-                             outputs=[
-                                 cookies,
-                                 top_p,
-                                 temperature,
-                                 max_length_sl,
-                                 system_prompt
-                             ])
+            return cookies_
 
+        top_p.change(partial(on_llm_config_change, "top_p"), [cookies, md_dropdown, top_p], [cookies])
+        temperature.change(partial(on_llm_config_change, "temperature"), [cookies, md_dropdown, temperature], [cookies])
+        max_length_sl.change(partial(on_llm_config_change, "max_length_sl"), [cookies, md_dropdown, max_length_sl], [cookies])
+        system_prompt.change(partial(on_llm_config_change, "system_prompt"), [cookies, md_dropdown, system_prompt], [cookies])
 
         def on_theme_dropdown_changed(theme, secret_css):
             adjust_theme, css_part1, _, adjust_dynamic_theme = load_dynamic_theme(theme)

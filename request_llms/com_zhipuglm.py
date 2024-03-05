@@ -11,11 +11,13 @@ import logging, os
 def input_encode_handler(inputs, llm_kwargs):        
     if llm_kwargs["most_recent_uploaded"].get("path"):
         image_paths = get_pictures_list(llm_kwargs["most_recent_uploaded"]["path"])
-    md_encode = []
+    # md_encode = []
+    md_encode = ""
     for md_path in image_paths:
         type_ = os.path.splitext(md_path)[1].replace(".", "")
         type_ = "jpeg" if type_ == "jpg" else type_
-        md_encode.append({"data": encode_image(md_path), "type": type_})
+        # md_encode.append({"data": encode_image(md_path), "type": type_})
+        md_encode = encode_image(md_path)
     return inputs, md_encode
 
 

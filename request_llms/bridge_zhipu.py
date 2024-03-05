@@ -1,5 +1,6 @@
 import time
 import os
+import re
 from toolbox import update_ui, get_conf, update_ui_lastest_msg
 from toolbox import check_packages, report_exception, have_any_recent_upload_image_files
 
@@ -15,6 +16,10 @@ def make_media_input(inputs, image_paths):
     for image_path in image_paths:
         inputs = inputs + f'<br/><br/><div align="center"><img src="file={os.path.abspath(image_path)}"></div>'
     return inputs
+
+def remove_media_input(inputs):
+    inputs_replaced = re.sub(r'<div align="center">.*?</div>', '', inputs, flags=re.DOTALL)
+    return inputs_replaced
 
 def predict_no_ui_long_connection(inputs, llm_kwargs, history=[], sys_prompt="", observe_window=[], console_slience=False):
     """
@@ -80,9 +85,14 @@ def predict(inputs, llm_kwargs, plugin_kwargs, chatbot, history=[], system_promp
         if have_recent_file:
             inputs = make_media_input(inputs, image_paths)
             chatbot[-1] = [inputs, ""]
+            # 每次图片识别，都需要清空history，否则回答会因为收到history的影响而重复之前一张图片的回答
+            history.clear()
+            history.append(inputs)
             yield from update_ui(chatbot=chatbot, history=history)
 
-
+    # 需要把text内容里的图片标签清掉
+    # 否则zhipu会尝试从text的图片标签里读取图片，然后因为无法读取图片标签里的本地图片而无法作答。
+    inputs = remove_media_input(inputs)
     # 开始接收回复
     from .com_zhipuglm import ZhipuChatInit
     zhipu_bro_init = ZhipuChatInit()

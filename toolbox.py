@@ -606,6 +606,20 @@ def load_chat_cookies():
                 "top_p": 1.0, # 请求的时候乘了0.7，所以这里为1
                 "system_prompt": system_prompt,
             },
+            "glm-4v": {
+                "max_length_sl": 4069,
+                # 采样温度，控制输出的随机性，必须为正数
+                # 取值范围是：(0.0, 1.0)，不能等于 0，默认值为 0.95，值越大，会使输出更随机，更具创造性；值越小，输出会更加稳定或确定
+                # 建议您根据应用场景调整 top_p 或 temperature 参数，但不要同时调整两个参数
+                "temperature": 1.0,  # 请求的时候乘了0.95，所以这里为1
+                # 用温度取样的另一种方法，称为核取样
+                # 取值范围是：(0.0, 1.0) 开区间，不能等于 0 或 1，默认值为 0.7
+                # 模型考虑具有 top_p 概率质量 tokens 的结果
+                # 例如：0.1 意味着模型解码器只考虑从前 10% 的概率的候选集中取 tokens
+                # 建议您根据应用场景调整 top_p 或 temperature 参数，但不要同时调整两个参数
+                "top_p": 1.0,  # 请求的时候乘了0.7，所以这里为1
+                "system_prompt": "你是我的图片识别助理,帮助我识别给定的图片并详细描述图片的内容"
+            },
             # https://help.aliyun.com/zh/dashscope/developer-reference/api-details?spm=a2c4g.11186623.0.i1
             "qwen-max": {
                 "max_length_sl": 1500,

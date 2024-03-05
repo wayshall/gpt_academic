@@ -31,7 +31,9 @@ def main():
     from themes.theme import adjust_theme, advanced_css, theme_declaration, js_code_clear, js_code_reset, js_code_show_or_hide, js_code_show_or_hide_group2
     from themes.theme import js_code_for_css_changing, js_code_for_toggle_darkmode, js_code_for_persistent_cookie_init
     from themes.theme import load_dynamic_theme, to_cookie_str, from_cookie_str, init_cookie
-    title_html = f"<h1 align=\"center\">{title_desc} {get_current_version()}</h1>{theme_declaration}"
+    # title_html = f"<h1 align=\"center\">{title_desc} {get_current_version()}</h1>{theme_declaration}"
+    title_html = f"<h1 align=\"center\">{title_desc} </h1>{theme_declaration}"
+    help_menu_description = f"{title_desc} 1.0 "
 
     # 问询记录, python 版本建议3.9+（越新越好）
     import logging, uuid

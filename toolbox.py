@@ -556,6 +556,7 @@ def load_chat_cookies():
     AZURE_CFG_ARRAY, NUM_CUSTOM_BASIC_BTN = get_conf(
         "AZURE_CFG_ARRAY", "NUM_CUSTOM_BASIC_BTN"
     )
+    system_prompt = get_conf("INIT_SYS_PROMPT")
 
     # deal with azure openai key
     if is_any_api_key(AZURE_API_KEY):
@@ -590,6 +591,21 @@ def load_chat_cookies():
         "api_key": API_KEY,
         "llm_model": LLM_MODEL,
         "customize_fn_overwrite": customize_fn_overwrite_,
+        "llm_model_configs": {
+            "glm-4": {
+                "max_length_sl": 4069,
+                "temperature": 1.0,
+                "top_p": 1.0,
+                "system_prompt": system_prompt,
+            },
+
+            "gpt-4": {
+                "max_length_sl": 4069,
+                "temperature": 1.0,
+                "top_p": 1.0,
+                "system_prompt": system_prompt,
+            }
+        }
     }
 
 

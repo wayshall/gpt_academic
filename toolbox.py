@@ -506,7 +506,7 @@ def on_file_uploaded(
             f"[Local Message] 收到以下文件 （上传到路径：{target_path_base}）: " +
             f"\n\n{moved_files_str}" +
             f"\n\n调用路径参数已自动修正到: \n\n{txt}" +
-            f"\n\n现在您点击任意函数插件时，以上文件将被作为输入参数" +
+            # f"\n\n现在您点击任意函数插件时，以上文件将被作为输入参数" +
             upload_msg,
         ]
     )
